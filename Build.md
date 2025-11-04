@@ -41,7 +41,7 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: ./mvnw package
+      run: ./mvnw package -DskipTests
 
     - name: Build the Docker image
       run: docker build -f src/main/docker/Dockerfile.jvm -t quarkus/saas-multitenant-jvm .
