@@ -1,5 +1,15 @@
 # saas-multitenant
 
+## Objective
+This project aims to explore and demonstrate best practices for building a SaaS (Software as a Service) multi-tenant application using Quarkus. It focuses on understanding architectural patterns, data isolation, and common challenges in multi-tenant environments.
+
+## Table of Contents
+- [Running the application in dev mode](#running-the-application-in-dev-mode)
+- [Packaging and running the application](#packaging-and-running-the-application)
+- [Creating a native executable](#creating-a-native-executable)
+- [Related Guides](#related-guides)
+- [Provided Code](#provided-code)
+
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
