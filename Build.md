@@ -124,3 +124,90 @@ The recommended way to handle this is to change the ownership of the host direct
     ```
 
 Now, the container can write to the mounted directory, and you can still read the files (though you might need `sudo` to modify or delete them, depending on your system's permissions).
+
+## Kubernetes Logging
+
+When deploying to Kubernetes, you should use a `PersistentVolume` (PV) and `PersistentVolumeClaim` (PVC) to manage log persistence. This is a more robust and flexible approach than host-path mounting.
+
+The application configuration for file logging in `application.properties` remains the same:
+
+```properties
+quarkus.log.file.path=/deployments/logs/app.log
+quarkus.log.file.enable=true
+```
+
+### 1. Create a PersistentVolumeClaim (PVC)
+
+First, create a PVC to request storage from your cluster. Create a file named `pvc.yaml` with the following content:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: quarkus-logs-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+Apply this to your cluster:
+
+```bash
+kubectl apply -f pvc.yaml
+```
+
+### 2. Mount the PVC in your Deployment
+
+Next, modify your Kubernetes `Deployment` manifest to mount the PVC into your application pod. You also need to set the `securityContext` to ensure the pod has the correct permissions to write to the volume.
+
+Here is an example of a `deployment.yaml` file:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quarkus-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quarkus
+  template:
+    metadata:
+      labels:
+        app: quarkus
+    spec:
+      securityContext:
+        runAsUser: 185
+        fsGroup: 185
+      containers:
+      - name: quarkus-app
+        image: quarkus/saas-multitenant-jvm # Replace with your image name
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: quarkus-logs
+          mountPath: /deployments/logs
+      volumes:
+      - name: quarkus-logs
+        persistentVolumeClaim:
+          claimName: quarkus-logs-pvc
+```
+
+In this example:
+
+*   `securityContext` sets the user and group ID to `185` to match the user in the Docker container. This ensures the pod has permission to write to the mounted volume.
+*   A volume named `quarkus-logs` is defined, which uses the `quarkus-logs-pvc` you created earlier.
+*   This volume is mounted into the container at `/deployments/logs`, which is the same path you configured in `application.properties`.
+
+Apply the deployment to your cluster:
+
+```bash
+kubectl apply -f deployment.yaml
+```
+
+Your application's logs will now be stored in the `PersistentVolume` and will persist across pod restarts.
+
