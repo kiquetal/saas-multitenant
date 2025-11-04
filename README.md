@@ -63,6 +63,45 @@ You can then execute your native executable with: `./target/saas-multitenant-1.0
 
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 
+## Advanced Native Compilation Considerations
+
+When building native executables, especially in containerized environments, you might need more control over the build process.
+
+### Custom Native Builder Image
+
+By default, Quarkus uses a specific builder image for native compilation when using container-based builds. You can override this to use a custom or different version of the builder image. This is useful if you need specific tools or a different environment for your build.
+
+To do this, you need to enable the container build and specify the image in your `application.properties`:
+
+```properties
+# Enable container-based native build
+quarkus.native.container-build=true
+# Specify the custom builder image
+quarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel:23.0-java17
+```
+
+This allows you to control the exact environment for your native compilation.
+
+### Handling Reflection for Native Images
+
+GraalVM's native image generation involves static analysis to determine which classes and methods are reachable. Code that uses reflection, like JPA entities, might not be automatically detected, leading to `ClassNotFoundException` or similar errors at runtime.
+
+To solve this, you need to explicitly tell GraalVM which classes need to be registered for reflection. Quarkus provides an annotation for this.
+
+For example, if you have a JPA entity `MyEntity.java`, you should annotate it like this:
+
+```java
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
+@Entity
+public class MyEntity extends PanacheEntity {
+    // ... your entity fields and methods
+}
+```
+
+By adding `@RegisterForReflection` to your entities and other classes that require reflection, you ensure they are correctly included in the native executable.
+
 ## Related Guides
 
 - REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
