@@ -2,6 +2,7 @@ package me.cresterida;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 
 /**
@@ -25,5 +26,5 @@ import jakarta.persistence.Entity;
  */
 @Entity
 public class MyEntity extends PanacheEntity {
-    public String field;
+    public String name;
 }

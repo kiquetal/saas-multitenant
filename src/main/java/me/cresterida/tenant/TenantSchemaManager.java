@@ -2,47 +2,72 @@ package me.cresterida.tenant;
 
 import io.quarkus.runtime.StartupEvent;
 import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.configuration.FluentConfiguration;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import javax.sql.DataSource;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 public class TenantSchemaManager {
-    
+
     @Inject
     DataSource dataSource;
-    
+
+    private static final String DEFAULT_TENANT = "base";
+    private final Logger LOGGER = Logger.getLogger(TenantSchemaManager.class.getName());
     void onStart(@Observes StartupEvent ev) {
-        // Initialize default schema
-        initializeSchema("public");
+        // Initialize public schema for tenant metadata
+        initializePublicSchema();
+
+        Organization.findAllOrganizations()
+                .stream()
+                .forEach(organization -> {
+                    String tenantId = organization.getTenantId();
+                    LOGGER.info("Initializing schema for tenant: " + tenantId);
+                    initializeTenantSchema(tenantId);
+                });
+
     }
-    
-    public void initializeSchema(String schemaName) {
-        FluentConfiguration config = Flyway.configure()
-            .dataSource(dataSource)
-            .schemas(schemaName)
-            .baselineOnMigrate(true)
-            .baselineVersion("0.0.0")
-            .locations("db/migration/" + schemaName);  // Tenant-specific migrations
-            
-        Flyway flyway = new Flyway(config);
-        flyway.migrate();
-    }
-    
-    public void createTenantSchema(String tenantId) {
-        // Create new schema for tenant
+
+    private void initializePublicSchema() {
+        LOGGER.info("Initializing Public Schema");
         try (var connection = dataSource.getConnection();
              var statement = connection.createStatement()) {
-            
-            statement.execute("CREATE SCHEMA IF NOT EXISTS " + tenantId);
-            
-            // Initialize schema with tenant-specific migrations
-            initializeSchema(tenantId);
+            // Ensure public schema exists
+            statement.execute("CREATE SCHEMA IF NOT EXISTS public");
+
+            // Apply public schema migrations (metadata only)
+            Flyway.configure()
+                .dataSource(dataSource)
+                .schemas("public")
+                .locations("classpath:db/migration/public")
+                .load()
+                .migrate();
+            LOGGER.info("Public Schema Initialized");
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create tenant schema: " + tenantId, e);
+            throw new RuntimeException("Failed to initialize public schema", e);
         }
     }
+
+    public void initializeTenantSchema(String tenantId) {
+        // Create schema if it doesn't exist
+        try (var connection = dataSource.getConnection();
+             var statement = connection.createStatement()) {
+            statement.execute("CREATE SCHEMA IF NOT EXISTS " + tenantId);
+
+            // Apply tenant-specific migrations
+            Flyway.configure()
+                .dataSource(dataSource)
+                .schemas(tenantId)
+                .locations("classpath:db/migration/tenants")
+                .load()
+                .migrate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize tenant schema: " + tenantId, e);
+        }
+    }
+
 }

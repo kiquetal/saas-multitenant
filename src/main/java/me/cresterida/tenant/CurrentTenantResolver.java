@@ -1,13 +1,15 @@
 package me.cresterida.tenant;
 
+import io.quarkus.hibernate.orm.PersistenceUnitExtension;
 import io.quarkus.hibernate.orm.runtime.tenant.TenantResolver;
 import jakarta.enterprise.context.RequestScoped;
 
 @RequestScoped
+@PersistenceUnitExtension
 public class CurrentTenantResolver implements TenantResolver {
-    
-    private static final String DEFAULT_TENANT = "public";
-    
+
+    private static final String DEFAULT_TENANT = "base";
+
     @Override
     public String getDefaultTenantId() {
         return DEFAULT_TENANT;
