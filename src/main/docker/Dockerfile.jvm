@@ -91,6 +91,10 @@ FROM registry.access.redhat.com/ubi9/openjdk-21:1.23
 
 ENV LANGUAGE='en_US:en'
 
+LABEL name="saas-multitenant" \
+      version="1.0.0" \
+      maintainer="cresterida" \
+      description="Multi-tenant SaaS Application"
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --from=build --chown=185 /usr/src/app/target/quarkus-app/lib/ /deployments/lib/
