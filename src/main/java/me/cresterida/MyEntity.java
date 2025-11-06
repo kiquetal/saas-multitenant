@@ -1,8 +1,8 @@
 package me.cresterida;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import jakarta.persistence.*;
 
 
 /**
@@ -25,6 +25,11 @@ import jakarta.persistence.Table;
  * }
  */
 @Entity
-public class MyEntity extends PanacheEntity {
+@Table(name = "my_entity")
+public class MyEntity extends PanacheEntityBase
+{
+    @Id
+    @GeneratedValue(strategy =  GenerationType.IDENTITY)
+    public Long id;
     public String name;
 }
