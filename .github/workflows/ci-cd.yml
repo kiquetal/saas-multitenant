@@ -82,11 +82,27 @@ jobs:
             **Commit:** ${{ github.sha }}
             
             ### Container Images
+            
+            **Multi-platform (recommended):**
             - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}`
             - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.datetime }}`
             - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest`
             
-            **Platforms:** linux/amd64, linux/arm64
+            **Platform-specific selection:**
+            - AMD64: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}@linux/amd64`
+            - ARM64: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}@linux/arm64`
+            - AMD64: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.datetime }}@linux/amd64`
+            - ARM64: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.datetime }}@linux/arm64`
+            
+            **Usage:**
+            ```bash
+            # Multi-platform (auto-select)
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}
+            
+            # Specific platform
+            docker pull --platform=linux/amd64 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}
+            docker pull --platform=linux/arm64 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}
+            ```
           draft: false
           prerelease: false
 
