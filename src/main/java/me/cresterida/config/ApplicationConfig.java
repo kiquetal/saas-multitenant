@@ -8,7 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.annotations.info.License;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-@ApplicationPath("/api")
+
 @OpenAPIDefinition(
     info = @Info(
         title = "SaaS Multi-tenant API",
