@@ -3,8 +3,8 @@ CREATE SEQUENCE IF NOT EXISTS organization_seq
     START 1;
 
 CREATE TABLE IF NOT EXISTS organizations (
-                                             id BIGINT PRIMARY KEY,
-                                             name VARCHAR(255) NOT NULL,
+                                             id BIGINT PRIMARY KEY DEFAULT nextval('organization_seq'),
+    name VARCHAR(255) NOT NULL,
     tenant_id VARCHAR(50) NOT NULL UNIQUE,
     subscription_plan VARCHAR(50) NOT NULL
     );
