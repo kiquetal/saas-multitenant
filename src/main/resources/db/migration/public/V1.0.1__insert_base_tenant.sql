@@ -9,3 +9,4 @@ INSERT INTO organizations(
     'base',
     'FREE'
 )
+

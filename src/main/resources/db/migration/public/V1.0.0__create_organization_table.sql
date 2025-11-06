@@ -9,3 +9,5 @@ CREATE TABLE IF NOT EXISTS organizations (
     subscription_plan VARCHAR(50) NOT NULL
     );
 
+
+

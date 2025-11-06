@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import java.util.List;
 
 @Entity
+@Table(name = "organizations", schema = "public")
 public class Organization extends PanacheEntity {
     @Column(name = "name")
     public String name;
