@@ -84,7 +84,6 @@ FROM maven:3.9.6-eclipse-temurin-21 AS build
 COPY src /usr/src/app/src
 COPY pom.xml /usr/src/app
 COPY mvnw /usr/src/app
-COPY .mvn /usr/src/app/.mvn
 RUN mvn -f /usr/src/app/pom.xml -DskipTests package
 
 # Final stage

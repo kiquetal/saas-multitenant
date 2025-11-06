@@ -1,0 +1,29 @@
+# Maven
+target/
+!target/quarkus-app/*
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# IntelliJ
+.idea
+*.ipr
+*.iml
+*.iws
+
+# NetBeans
+nb-configuration.xml
+
+# VS Code
+.vscode/
+
+# Local environment
+.env
+
+# Misc
+*.log
+.git/
+.gitignore
