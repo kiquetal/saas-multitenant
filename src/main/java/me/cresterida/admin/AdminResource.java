@@ -17,7 +17,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import java.util.List;
 import java.util.logging.Logger;
 
-@Path("/admin")
+@Path("/api/admin")  // Updated to match the new base path
 @Tag(name = "Admin Operations", description = "Endpoints for tenant and organization management")
 public class AdminResource {
 
@@ -65,7 +65,7 @@ public class AdminResource {
             organization.setName(organizationDTO.name());
             organization.setTenantId(organizationDTO.tenantId());
             organization.setSubscriptionPlan(organizationDTO.subscriptionPlan());
-            
+
             // Persist organization
             organization.persist();
 
