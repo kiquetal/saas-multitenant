@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:18
+    image: postgres:latest
     container_name: saas-multitenant-db
     ports:
       - "5432:5432"
