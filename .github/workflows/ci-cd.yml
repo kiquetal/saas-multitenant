@@ -35,7 +35,7 @@ jobs:
           cache: 'maven'
 
       - name: Build with Maven
-        run: ./mvnw -B package -DskipTests
+        run: mvn -B package -DskipTests
 
       - name: Generate tags
         id: tags
