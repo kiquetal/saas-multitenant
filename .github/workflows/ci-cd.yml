@@ -18,12 +18,6 @@ jobs:
       contents: read
       packages: write
 
-    strategy:
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
-
     steps:
       - uses: actions/checkout@v4
 
@@ -58,12 +52,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push multi-platform images
         uses: docker/build-push-action@v5
         with:
           context: .
           file: src/main/docker/Dockerfile.jvm
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -74,7 +68,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build summary
-        if: github.event_name != 'pull_request' && matrix.platform == 'linux/amd64'
+        if: github.event_name != 'pull_request'
         run: |
           echo "## 🚀 Build Complete" >> $GITHUB_STEP_SUMMARY
           echo "**Tags created:**" >> $GITHUB_STEP_SUMMARY
