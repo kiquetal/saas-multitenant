@@ -97,44 +97,6 @@ jobs:
               log_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
 
-      - name: Create Release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.tags.outputs.date }}
-          release_name: Release v${{ steps.tags.outputs.date }}
-          body: |
-            ## 🚀 Release v${{ steps.tags.outputs.date }}
-            
-            **Build Date:** ${{ steps.tags.outputs.datetime }}
-            **Commit:** ${{ github.sha }}
-            
-            ### Container Images
-            
-            **Multi-platform (recommended):**
-            - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}`
-            - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.datetime }}`
-            - `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest`
-            
-            **Platform-specific tags:**
-            - AMD64: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}-amd64`
-            - ARM64: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}-arm64`
-            - AMD64: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.datetime }}-amd64`
-            - ARM64: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.datetime }}-arm64`
-            
-            **Usage:**
-            ```bash
-            # Multi-platform (auto-select)
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}
-            
-            # Specific platform
-            docker pull --platform=linux/amd64 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}
-            docker pull --platform=linux/arm64 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.date }}
-            ```
-          draft: false
-          prerelease: false
 
       - name: Build summary
         if: github.event_name != 'pull_request'
