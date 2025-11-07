@@ -8,7 +8,7 @@ import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
-import java.util.logging.Logger;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class TenantSchemaManager {
@@ -37,7 +37,7 @@ public class TenantSchemaManager {
                         initializeTenantSchema(tenantId);
                     });
         } catch (Exception e) {
-            LOGGER.severe("Error during startup: " + e.getMessage());
+            LOGGER.error("Error during startup: " + e.getMessage());
             throw e;
         }
     }
@@ -53,11 +53,12 @@ public class TenantSchemaManager {
             // Check if table exists
             try (ResultSet rs = connection.getMetaData().getTables(null, "public", "organizations", new String[]{"TABLE"})) {
                 if (!rs.next()) {
-                    LOGGER.severe("Organizations table not found!");
+                    LOGGER.debug("Organizations table not found!");
                     throw new RuntimeException("Organizations table does not exist!");
                 }
             }
 
+            LOGGER.debug("Organizations table found!");
             // Verify we can query the table
             try (var stmt = connection.createStatement()) {
                 ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM public.organizations");
@@ -91,7 +92,7 @@ public class TenantSchemaManager {
 
             // Give the database a moment to complete the operation
             Thread.sleep(1000);
-
+            LOGGER.debug("After waiting for migrations");
             LOGGER.info("Public Schema Initialized");
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize public schema", e);
