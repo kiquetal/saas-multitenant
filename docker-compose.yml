@@ -56,6 +56,12 @@ services:
       - saas-network
     volumes:
       - ./config/loki:/etc/loki
+      - loki_data:/loki
+    environment:
+      - JAEGER_AGENT_HOST=tempo
+      - JAEGER_ENDPOINT=http://tempo:14268/api/traces
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=1
 
   fluentd:
     build:
@@ -78,6 +84,8 @@ volumes:
     name: saas-multitenant-data
   app_logs:
     name: saas-multitenant-logs
+  loki_data:
+    name: saas-multitenant-loki
 
 networks:
   saas-network:
