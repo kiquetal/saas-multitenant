@@ -79,6 +79,23 @@ services:
     depends_on:
       - loki
 
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_LOG_LEVEL=info
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - saas-network
+    depends_on:
+      - loki
+
 volumes:
   postgres_data:
     name: saas-multitenant-data
@@ -86,6 +103,9 @@ volumes:
     name: saas-multitenant-logs
   loki_data:
     name: loki-data
+  grafana_data:
+    name: grafana-data
+
 networks:
   saas-network:
     name: saas-network
