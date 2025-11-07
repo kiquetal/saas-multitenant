@@ -106,6 +106,7 @@ public class TenantSchemaManager {
              var statement = connection.createStatement()) {
             statement.execute("CREATE SCHEMA IF NOT EXISTS " + quoteTenantIdentifier(tenantId));
 
+            LOGGER.debug("The tenant is: " + tenantId);
             // Apply tenant-specific migrations
             Flyway.configure()
                 .dataSource(dataSource)

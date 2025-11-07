@@ -12,15 +12,23 @@ services:
       - QUARKUS_DATASOURCE_PASSWORD=postgres
       - QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://db:5432/quarkus
       - QUARKUS_HTTP_ROOT_PATH=/borges
+    volumes:
+      - app_logs:/app/logs
     networks:
       - saas-network
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: app.saas-multitenant
     depends_on:
       db:
         condition: service_healthy
-    restart: unless-stopped
+      fluentd:
+        condition: service_started
 
   db:
-    image: postgres:latest
+    image: postgres:18
     container_name: saas-multitenant-db
     ports:
       - "5432:5432"
@@ -37,11 +45,39 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - saas-network
+    volumes:
+      - ./config/loki:/etc/loki
+
+  fluentd:
+    build:
+      context: ./config/fluentd
+      dockerfile: Dockerfile
+    container_name: fluentd
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    volumes:
+      - ./config/fluentd/conf:/fluentd/etc
+      - app_logs:/fluentd/log
+    networks:
+      - saas-network
+    depends_on:
+      - loki
 
 volumes:
   postgres_data:
     name: saas-multitenant-data
+  app_logs:
+    name: saas-multitenant-logs
 
 networks:
   saas-network:
