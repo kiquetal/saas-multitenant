@@ -1,11 +1,122 @@
-# Loki Integration Guide with Fluentd (Loki 2.9.x)
+# Fluentd Configuration for Loki Integration
 
-This guide explains how to properly configure Fluentd to send logs to Loki and how to query them effectively. The configuration is specifically tested with Loki 2.9.x.
+This guide shows the current configuration of Fluentd to send Quarkus application logs to Loki (tested with Loki 2.9.x).
 
-## Configuration Steps
+## Configuration
 
-### 1. Parse Log Files
-First, we configure Fluentd to tail and parse our log files:
+```ruby
+# File-based logs (from shared volume)
+<source>
+  @type tail
+  path /fluentd/log/app-quarkus.log,/fluentd/log/quarkus.log
+  pos_file /tmp/quarkus.log.pos
+  tag quarkus.logs
+  <parse>
+    @type regexp
+    expression /^(?<time>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2},\d{3})\s+(?<container>\S+)\s+.*\s+(?<level>[A-Z]+)\s+\[(?<logger>[^\]]+)\]\s+\((?<thread>[^\)]+)\)\s+(?<message>.*)$/
+    time_format %Y-%m-%d %H:%M:%S,%L
+  </parse>
+</source>
+
+# HTTP input for testing
+<source>
+  @type http
+  port 9880
+  bind 0.0.0.0
+  <parse>
+    @type json
+  </parse>
+</source>
+
+# Transform records before sending to Loki
+<filter quarkus.**>
+  @type record_transformer
+  enable_ruby true
+  auto_typecast true
+  <record>
+    loki_level ${record["level"]}
+    loki_container ${record["container"]}
+    loki_logger ${record["logger"]}
+    loki_thread ${record["thread"]}
+  </record>
+</filter>
+
+<match quarkus.**>
+  @type loki
+  url http://loki:3100
+  extra_labels {"job": "quarkus-file", "app": "saas-multitenant", "env": "prod"}
+  
+  <label>
+    loki_level
+    loki_container
+    loki_logger
+    loki_thread
+  </label>
+
+  remove_keys loki_level,loki_container,loki_logger,loki_thread,level,container,logger,thread
+
+  <buffer>
+    @type memory
+    chunk_limit_size 1m
+    flush_interval 5s
+    flush_at_shutdown true
+    retry_max_times 5
+  </buffer>
+</match>
+
+# Fluentd internal logs
+<label @FLUENT_LOG>
+  <match **>
+    @type stdout
+  </match>
+</label>
+
+# Debug output
+<match **>
+  @type stdout
+</match>
+```
+
+## Configuration Explanation
+
+### 1. Log Sources (`<source>`)
+- **Main Log Source**:
+  - Tails Quarkus application logs
+  - Uses regex to parse structured log entries
+  - Captures: time, container, level, logger, thread, and message
+  - Important: Uses comma (,) in time format for milliseconds
+
+- **HTTP Source**:
+  - Additional input for testing
+  - Accepts JSON format on port 9880
+
+### 2. Record Transformation (`<filter>`)
+- Creates Loki-specific fields with `loki_` prefix
+- Transforms original log fields for Loki compatibility
+- Uses Ruby processing for field extraction
+
+### 3. Loki Output (`<match>`)
+- Sends logs to Loki at http://loki:3100
+- Static labels:
+  - job: "quarkus-file"
+  - app: "saas-multitenant"
+  - env: "prod"
+- Dynamic labels from transformed fields:
+  - loki_level
+  - loki_container
+  - loki_logger
+  - loki_thread
+- Removes processed fields to avoid duplication
+- Buffer configuration for reliability:
+  - Memory-based buffering
+  - 1MB chunks
+  - 5-second flush interval
+  - Shutdown flush enabled
+  - 5 retry attempts
+
+### 4. Debug Output
+- Fluentd internal logs to stdout
+- Catch-all matcher for debugging
 
 ```ruby
 <source>
