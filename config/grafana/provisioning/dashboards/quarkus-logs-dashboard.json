@@ -1,78 +1,37 @@
 {
-  "dashboard": {
-    "id": null,
-    "title": "Quarkus Multi-tenant Application Logs",
-    "tags": ["quarkus", "logs", "multi-tenant"],
-    "style": "dark",
-    "timezone": "browser",
-    "panels": [
-      {
-        "id": 1,
-        "title": "Log Volume Over Time",
-        "type": "timeseries",
-        "targets": [
-          {
-            "expr": "sum(rate({job=\"quarkus-file\"}[1m]))",
-            "refId": "A"
-          }
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-        "options": {
-          "legend": {"displayMode": "visible"},
-          "tooltip": {"mode": "single"}
+  "id": null,
+  "uid": null,
+  "title": "Quarkus Logs",
+  "panels": [
+    {
+      "id": 2,
+      "title": "Application Logs",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": null,
+          "expr": "{job=\"quarkus-file\"}",
+          "refId": "A"
         }
-      },
-      {
-        "id": 2,
-        "title": "Log Levels Distribution",
-        "type": "piechart",
-        "targets": [
-          {
-            "expr": "count_over_time({job=\"quarkus-file\"}[1h]) by (loki_level)",
-            "refId": "A"
-          }
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
-      },
-      {
-        "id": 3,
-        "title": "Error Rate",
-        "type": "stat",
-        "targets": [
-          {
-            "expr": "sum(rate({job=\"quarkus-file\", loki_level=\"ERROR\"}[5m]))",
-            "refId": "A"
-          }
-        ],
-        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 8},
-        "fieldConfig": {
-          "defaults": {
-            "color": {"mode": "thresholds"},
-            "thresholds": {
-              "steps": [
-                {"color": "green", "value": null},
-                {"color": "yellow", "value": 0.01},
-                {"color": "red", "value": 0.1}
-              ]
-            }
-          }
-        }
-      },
-      {
-        "id": 4,
-        "title": "Recent Logs",
-        "type": "logs",
-        "targets": [
-          {
-            "expr": "{job=\"quarkus-file\"}",
-            "refId": "A"
-          }
-        ],
-        "gridPos": {"h": 12, "w": 24, "x": 0, "y": 12}
+      ],
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 0
       }
-    ],
-    "time": {"from": "now-1h", "to": "now"},
-    "refresh": "30s"
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "schemaVersion": 37,
+  "timezone": "browser",
+  "version": 1,
+  "links": [],
+  "templating": {
+    "list": []
   }
 }
-
